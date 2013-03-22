@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Data Scatterplot App</title>
+    <script src="d3.v2.js"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.js"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.js"></script>
+    <script src="DataScatter.js"></script>
+    <link type="text/css" rel="stylesheet" href="DataScatter.css" />
+    <link rel="icon" href="img/KBase_favicon.ico" type="image/x-icon">
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="css/identity.css" rel="stylesheet">
+    <link href="css/kbase-common.css" rel="stylesheet">
+    <link type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css" rel="stylesheet" />    
+    <style type="text/css">
+      body {
+        /* padding to make room for the fixed nav bar, 
+           modify in css as needed. */
+        padding-top: 60px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="navbar navbar-fixed-top">      
+      <div class="navbar-inner">
+        <a href="http://www.kbase.us/labs/"><img class="logo" src="img/labs_icon.png" width="46"></a>
+        <a class="brand">Data Scatter</a>
+        <ul class="nav">
+          
+        </ul>
+        <ul class="nav" style="float:right;">
+          <li><a>Sign In<span id="counter"></span></a></li>
+        </ul>
+      </div>
+    </div>
+
+
+    <div class="container">
+      
+      <div class="row">
+        <div class="span9">
+          <div id="plotarea">
+          </div>
+        </div>
+        <div class="span3">
+          <table id="key" class="accordian">
+          </table>
+        </div>
+      </div>
+
+      <div class="row">
+        <div id="dataPointsTableContainer" class="span12">
+          <table id="dataPointsTable">
+          </table>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="span12">
+          <div id="table">
+          </div>
+        </div>
+      </div>
+
+      <script>
+          d3.json("mr1.FitnessData.json", KBScatterDraw);
+      </script>
+
+    </div>
+  
+  </body>
+
+</html>

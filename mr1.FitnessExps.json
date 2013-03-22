@@ -1,0 +1,48 @@
+[
+   {
+      "dataSetType" : "Fitness",
+      "dataSetId" : 0,
+      "dataSetName" : "FE(III)"
+   },
+   {
+      "dataSetType" : "Fitness",
+      "dataSetId" : 1,
+      "dataSetName" : "Fumarate"
+   },
+   {
+      "dataSetType" : "Fitness",
+      "dataSetId" : 2,
+      "dataSetName" : "DMSO"
+   },
+   {
+      "dataSetType" : "Fitness",
+      "dataSetId" : 3,
+      "dataSetName" : "Cobalt"
+   },
+   {
+      "dataSetType" : "Fitness",
+      "dataSetId" : 4,
+      "dataSetName" : "MnOX"
+   },
+   {
+      "dataSetType" : "Fitness",
+      "dataSetId" : 5,
+      "dataSetName" : "Nitrate"
+   },
+   {
+      "dataSetType" : "Fitness",
+      "dataSetId" : 6,
+      "dataSetName" : "Well B3 (KCl in LB)"
+   },
+   {
+      "dataSetType" : "Fitness",
+      "dataSetId" : 7,
+      "dataSetName" : "Well A5 (LB)"
+   },
+   {
+      "dataSetType" : "Fitness",
+      "dataSetId" : 8,
+      "dataSetName" : "LB - high NaCl"
+   }
+]
+
