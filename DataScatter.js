@@ -10,12 +10,23 @@ var container_dimensions = { width: 900, height: 900},
 		width:  container_dimensions.width - margins.left - margins.right,
 		height: container_dimensions.height- margins.top  - margins.bottom
 	};
+
+// Scatterplot Data object 
+var sData = {
+		"values"        : {},
+		"dataSetObjs"   : [],
+		"dataPointObjs" : []
+	};
+
+//Declare dataTables handle for the dataPointsTable to make sure it is only created once
+//otherwise dataTables freaks out
+var dataPointsTable = 0;
+
 // make it responsive?
 
 var padding = 20;
 var cellSize;
 var scatterplot;
-var table;
 var selectedDataPoints = {};
 
 d3.selection.prototype.moveToFront = function() { 
@@ -24,12 +35,23 @@ d3.selection.prototype.moveToFront = function() {
 					}); 
 };
 
-function KBScatterDraw(data) {
+function KBScatterDraw(sData) {
+
+	//reset some variables and remove everything made by the previous datafile 
 	
+	selectedSet        = [];
+	selectedDataPoints = {}
+	
+	$("#key").empty();
+	$("#dataPointsTableContainer").empty();
+	$("#plotarea").empty();
+
+
 	//Drawing the key
+	
 	var key_items = d3.select("#key")
 		.selectAll("table")
-		.data(data.dataSetObjs)
+		.data(sData.dataSetObjs)
 		.enter()
 		.append("tr")
 			.attr("class", "key_exp")
@@ -49,23 +71,28 @@ function KBScatterDraw(data) {
 		.text(function(d){return d.dataSetName});
 
 	d3.selectAll(".key_exp")
-		.on("click", set_selected_dataSet);
+		.on("click", set_selected_dataSet );
 
+
+	// Making the dataPointsTable
+	$("#dataPointsTableContainer").append('<table id="dataPointsTable"></table>');
 	$("#dataPointsTable").append("<thead><tr><th>Name</th><th>Description</th></tr></thead>");
 
-	for (var i in data.dataPointObjs) {
-		var obj = data.dataPointObjs[i];
+	for (var i in sData.dataPointObjs) {
+		var obj = sData.dataPointObjs[i];
 		var str = "<td>" + obj.dataPointName + "</td><td>" + obj.dataPointDesc + "</td>";
 		$("#dataPointsTable").append("<tr id=" + obj.dataPointName + ">" + str + "</tr>");
 	}
 
-	var dataPointTable = $('#dataPointsTable').dataTable({ "bPaginate": true, 
-											 			   "bFilter"  : true,
-									  					   "asSorting": [[1, "asc"]] 
-														});
+	dataPointsTable = $('#dataPointsTable').dataTable({ "bPaginate": true, 
+														"bFilter"  : true,
+														"asSorting": [[1, "asc"]] 
+													});
+
 
 	setDataTablesHover();
 
+	
 	scatterplot = d3.select("#plotarea")
 		.append("svg")
 			.attr("width", container_dimensions.width)
@@ -75,8 +102,9 @@ function KBScatterDraw(data) {
 			.attr("id", "scatterplot");
 
 
-	function makePlot(data) {
-		
+	function makePlot(sData) {
+	
+
 		d3.select("svg").remove();
 		cellSize = chart_dimensions.width / selectedSet.length;
 		scatterplot = d3.select("#plotarea")
@@ -87,15 +115,16 @@ function KBScatterDraw(data) {
 						.attr("transform", "translate(" + margins.left + "," + margins.top + ")")
 						.attr("id", "scatterplot");
 
-		var x_axis_scale = {}, y_axis_scale = {};
+		var x_axis_scale = {}, 
+			y_axis_scale = {};
 
 		selectedSet.forEach( function(dataSet) {
 			x_axis_scale[dataSet] = d3.scale.linear()
-									.domain( [data.dataSetObjs[dataSet].minValue, data.dataSetObjs[dataSet].maxValue] )
+									.domain( [sData.dataSetObjs[dataSet].minValue, sData.dataSetObjs[dataSet].maxValue] )
 									.range( [padding / 2, cellSize - padding / 2] );
 
 			y_axis_scale[dataSet] = d3.scale.linear()
-									.domain( [data.dataSetObjs[dataSet].minValue, data.dataSetObjs[dataSet].maxValue] )
+									.domain( [sData.dataSetObjs[dataSet].minValue, sData.dataSetObjs[dataSet].maxValue] )
 									.range( [cellSize - padding / 2, padding / 2] );
 		});
 
@@ -140,7 +169,7 @@ function KBScatterDraw(data) {
 			.attr("x", padding)
 			.attr("y", padding)
 			.attr("dy", ".71em")
-			.text(function(d) { return data.dataSetObjs[d.x].dataSetName; });
+			.text(function(d) { return sData.dataSetObjs[d.x].dataSetName; });
 
 		
 		function plotCell (cellData) {
@@ -155,16 +184,17 @@ function KBScatterDraw(data) {
 
 			
 			cell.selectAll("circle")
-				.data(data.dataPointObjs)
+				.data(sData.dataPointObjs)
 				.enter()
 				.append("circle")
 				.attr("id", function(d) { return d.dataPointName; } )
-				.attr("cx", function(d) { return x_axis_scale[cellData.x]( data.values[d.dataPointName][cellData.x] ); })
-				.attr("cy", function(d) { return y_axis_scale[cellData.y]( data.values[d.dataPointName][cellData.y] ); })
+				.attr("cx", function(d) { return x_axis_scale[cellData.x]( sData.values[d.dataPointName][cellData.x] ); })
+				.attr("cy", function(d) { return y_axis_scale[cellData.y]( sData.values[d.dataPointName][cellData.y] ); })
 				.attr("r", 4);
 
 			cell.call( brush.x(x_axis_scale[cellData.x]).y(y_axis_scale[cellData.y]) );
 		}
+
 
 		function brushstart(p) {
 			if (brush.data !== p) {
@@ -178,11 +208,12 @@ function KBScatterDraw(data) {
 
 			//can get a speed up by just selecting the circles from the cell
 			scatterplot.selectAll("circle").classed("selected", function(d) {
-				if (   e[0][0] <= data.values[d.dataPointName][p.x] && data.values[d.dataPointName][p.x] <= e[1][0]
-					&& e[0][1] <= data.values[d.dataPointName][p.y] && data.values[d.dataPointName][p.y] <= e[1][1] ) {
+				if (   e[0][0] <= sData.values[d.dataPointName][p.x] && sData.values[d.dataPointName][p.x] <= e[1][0]
+					&& e[0][1] <= sData.values[d.dataPointName][p.y] && sData.values[d.dataPointName][p.y] <= e[1][1] ) {
 					
 					return 1;
-				} else {
+				} 
+				else {
 					return 0;
 				}
 				
@@ -197,18 +228,19 @@ function KBScatterDraw(data) {
 
 			if ( brush.empty() ) {
 				scatterplot.selectAll("circle").classed("selected", 0);
-				dataPointTable.fnClearTable();
-				for (var d in data.dataPointObjs) {
-					var tmp = [ data.dataPointObjs[d].dataPointName, data.dataPointObjs[d].dataPointDesc ];
+				dataPointsTable.fnClearTable();
+				for (var d in sData.dataPointObjs) {
+					var tmp = [ sData.dataPointObjs[d].dataPointName, sData.dataPointObjs[d].dataPointDesc ];
 					tableData.push( tmp );
 				}
-				nTrArray = dataPointTable.fnAddData( tableData );
+				nTrArray = dataPointsTable.fnAddData( tableData );
 				for (var i in nTrArray) {
-					dataPointTable.fnSettings().aoData[ i ].nTr.id = data.dataPointObjs[i].dataPointName;
+					dataPointsTable.fnSettings().aoData[ i ].nTr.id = sData.dataPointObjs[i].dataPointName;
 				}
 				setDataTablesHover();
 			
-			} else {			
+			} 
+			else {			
 			
 				d3.selectAll(".selected").attr("class", function(d) {
 					points[d.dataPointName] = d.dataPointName;
@@ -219,16 +251,16 @@ function KBScatterDraw(data) {
 					uniquePoints.push(points[i]);
 				}
 
-				dataPointTable.fnClearTable();
+				dataPointsTable.fnClearTable();
 				for (var d in uniquePoints) {
-					var tmp = [ uniquePoints[d], data.values[ uniquePoints[d] ].dataPointDesc ];
+					var tmp = [ uniquePoints[d], sData.values[ uniquePoints[d] ].dataPointDesc ];
 					tableData.push( tmp );
 				}
 
-				nTrArray = dataPointTable.fnAddData( tableData );
+				nTrArray = dataPointsTable.fnAddData( tableData );
 
 				for (var i in nTrArray) {
-					dataPointTable.fnSettings().aoData[ i ].nTr.id = uniquePoints[i];
+					dataPointsTable.fnSettings().aoData[ i ].nTr.id = uniquePoints[i];
 				}
 				setDataTablesHover();
 
@@ -259,7 +291,7 @@ function KBScatterDraw(data) {
 	}
 
 	function setDataTablesHover() {
-			$( dataPointTable.fnGetNodes() ).hover(
+			$( dataPointsTable.fnGetNodes() ).hover(
 				function() { 
 					$(this).css("background","orange");
 					var id = $(this).attr("id");
@@ -279,9 +311,12 @@ function KBScatterDraw(data) {
 	}
 
 	function set_selected_dataSet() {
+		//showLoadingMessage();
+		$("#loading_message").show();
 		var id = d3.select(this).attr("id");
 		var i;
 		var markForRemoval;
+
 
 		// if selection already selected, mark index pos for removal
 		for (i = 0; i < selectedSet.length; i += 1) {
@@ -310,6 +345,114 @@ function KBScatterDraw(data) {
 			d3.select("#key_square_" + selectedSet[i]).style("background", "#99CCFF");
 			d3.select("#key_count_"  + selectedSet[i]).text(i+1);
 		}
-		makePlot(data);
+
+		makePlot(sData);
+		//hideLoadingMessage();
+		$("#loading_message").hide();
 	}
+}
+
+
+function processDataFile() {
+	var reader = new FileReader();
+	var files  = document.getElementById("dataFile").files;
+	
+	var nameCol = $("#nameColumn").val() - 1;
+	var descCol = $("#descriptionColumn").val() - 1;
+	var dataCol = $("#datasetStartColumn").val() - 1;
+
+	console.log(JSON.stringify(sData));
+	reader.onload = function (event) {
+		var fileString = event.target.result;
+		var lines      = fileString.split(/(\r\n|\n|\r)/g);
+
+		// Reset sData to an empty object
+		sData = {
+			"values"        : {},
+			"dataSetObjs"   : [],
+			"dataPointObjs" : []
+		};
+
+		
+		for (var i = 0; i < lines.length; i++) {
+			var fields = lines[i].split(/\t/);
+			if (i === 0) {
+				//parse header row
+				for (var c = dataCol; c < fields.length; c++) {
+					sData.dataSetObjs[c - dataCol] = {
+														"dataSetName" : fields[c],
+														"dataSetId"   : c - dataCol,
+														"dataSetType" : "Fitness",
+														"minValue"    : undefined,
+														"maxValue"    : undefined
+												  };
+				}
+			} 
+			else if (fields[nameCol] !== undefined) {
+				//parse non-header rows
+				sData.dataPointObjs.push(  {"dataPointName" : fields[nameCol], 
+										    "dataPointDesc" : fields[descCol]} );
+
+				sData.values[ fields[nameCol] ]  = { "dataPointName" : fields[nameCol], 
+													 "dataPointDesc" : fields[descCol] };
+	
+
+				for (var c = dataCol; c < fields.length; c++) {
+					
+					sData.values[ fields[nameCol] ][ c-dataCol ] = parseFloat(fields[c]);
+					
+					if (sData.dataSetObjs[c-dataCol].minValue === undefined 
+						|| sData.dataSetObjs[c-dataCol].minValue > parseFloat(fields[c]) ) {
+						sData.dataSetObjs[c-dataCol].minValue = parseFloat(fields[c]);
+					}
+
+					if (sData.dataSetObjs[c-dataCol].maxValue === undefined
+						|| sData.dataSetObjs[c-dataCol].maxValue < parseFloat(fields[c]) ) {
+						sData.dataSetObjs[c-dataCol].maxValue = parseFloat(fields[c]);
+					}
+				}
+			}		
+		}
+		//finished parsing file, calling the draw function
+		//probably should just be the parse functions call back...
+		KBScatterDraw(sData);
+	}
+
+	for (var i = 0; i < files.length; i++) {
+		reader.readAsText(files[i]);
+	}
+
+	$('#uploadModal').modal('hide');
+}
+
+$(window).load(function(){
+    //clear the default CSS associated with the blockUI loading element so we can insert ours
+    $.blockUI.defaults.css = {};
+    $(document).ajaxStop($.unblockUI);
+});
+
+function showLoadingMessage(message, element) {
+    if (element === undefined || element === null) {
+		if (message && message.length > 0) {
+			$("#loading_message_text").empty();
+			$("#loading_message_text").append(message);
+		}
+		
+		$.blockUI({message: $("#loading_message")});    
+    }
+    else {
+        $(element).block({message: "<div><div>" + message + "</div><div><img src='assets/img/loading.gif'/></div></div>"});    
+    }
+}
+
+
+function hideLoadingMessage(element) {
+    if (element === undefined || element === null) {
+        $.unblockUI();
+		$("#loading_message_text").empty();
+		$("#loading_message_text").append("Loading, please wait...");
+    }
+    else {
+        $(element).unblock();
+    }        
 }
