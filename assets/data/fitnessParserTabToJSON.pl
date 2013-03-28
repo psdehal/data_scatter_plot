@@ -8,7 +8,7 @@ use JSON;
 my $infile = "mr1.FitnessData.tab";
 my $outfile= "mr1.FitnessData.json";
 
-my $maxExps= 50;
+my $maxExps=198;
 my $expCol =  4;
 my $nameCol=  1;
 my $descCol=  2;
