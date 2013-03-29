@@ -68,3 +68,14 @@ circle {
 .cell text {
 	pointer-events: none;
 }
+.loading_message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%
+  z-index: 1001; 
+  background-color: gray;
+  opacity: 0.4;
+  display: none;
+}

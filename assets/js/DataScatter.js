@@ -1,5 +1,5 @@
 
-//These global variables should be in a single structure
+//These global variables should be in a single object structure
 
 var selectedSet = [];
 var maxSelection= 10;
@@ -10,6 +10,12 @@ var container_dimensions = { width: 900, height: 900},
 		width:  container_dimensions.width - margins.left - margins.right,
 		height: container_dimensions.height- margins.top  - margins.bottom
 	};
+
+var padding = 20;
+var cellSize;
+var scatterplot;
+var selectedDataPoints = {};
+
 
 // Scatterplot Data object 
 var sData = {
@@ -22,18 +28,16 @@ var sData = {
 //otherwise dataTables freaks out
 var dataPointsTable = 0;
 
-// make it responsive?
 
-var padding = 20;
-var cellSize;
-var scatterplot;
-var selectedDataPoints = {};
 
+
+// utility function to move elements to the front
 d3.selection.prototype.moveToFront = function() { 
 	return this.each( function() { 
 						this.parentNode.appendChild(this); 
 					}); 
 };
+
 
 function KBScatterDraw(sData) {
 
@@ -311,8 +315,7 @@ function KBScatterDraw(sData) {
 	}
 
 	function set_selected_dataSet() {
-		//showLoadingMessage();
-		$("#loading_message").show();
+		// Need to add "loading..." message here
 		var id = d3.select(this).attr("id");
 		var i;
 		var markForRemoval;
@@ -347,8 +350,7 @@ function KBScatterDraw(sData) {
 		}
 
 		makePlot(sData);
-		//hideLoadingMessage();
-		$("#loading_message").hide();
+		// need to remove loading message 
 	}
 }
 
