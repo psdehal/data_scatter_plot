@@ -190,19 +190,6 @@ function KBScatterDraw(sData) {
 			.attr("dy", ".71em")
 			.text(function(d) { return sData.dataSetObjs[d.x].dataSetName; });
 
-		// add mouseover for circles
-		// doing multiple selects is crazy slow
-
-		
-		$('svg circle').tipsy({
-			gravity: 's',
-			html: true,
-			title: function() {
-				var d = this.__data__;
-				return d.dataPointName + '<p>' + d.dataPointDesc;
-			}
-		});
-		
 
 		function plotCell (cellData) {
 			var cell = d3.select(this);
@@ -226,7 +213,30 @@ function KBScatterDraw(sData) {
 				.attr("id", function(d) { return d.dataPointName; } )
 				.attr("cx", function(d) { return x_axis_scale[cellData.x]( sData.values[d.dataPointName][cellData.x] ); })
 				.attr("cy", function(d) { return y_axis_scale[cellData.y]( sData.values[d.dataPointName][cellData.y] ); })
-				.attr("r", 4);
+				.attr("r", 4)
+				.each(function(d) {
+					$('circle#' + d.dataPointName).tipsy({
+						gravity: 's',
+						html: true,
+						title: function() {return d.dataPointName + '<p>' + d.dataPointDesc;}
+					});
+				})
+				.on("mouseover", function(d) {
+					var id = $(this).attr("id");
+					$("circle#" + id).attr("r", 6); 
+					$("circle#" + id).css("fill", "orange");
+					$("circle#" + id).css("fill-opacity", .75);
+
+					d3.selectAll("tr#" + id).style("background", "orange");
+					d3.selectAll("circle#" + id).moveToFront();
+				})
+				.on("mouseout", function(d) {
+					var id = $(this).attr("id");
+					$("circle#" + id).attr("r", 4); 
+					$("circle#" + id).css("fill", "");
+					$("circle#" + id).css("fill-opacity", "");
+					d3.selectAll("tr#" + id).style("background", "");
+				});
 			
 		}
 
@@ -298,7 +308,7 @@ function KBScatterDraw(sData) {
 					dataPointsTable.fnSettings().aoData[ i ].nTr.id = uniquePoints[i];
 				}
 				setDataTablesHover();
-
+				/*
 				d3.selectAll(".selected")
 					.moveToFront()
 					.on("mouseover", function(d) {
@@ -309,7 +319,7 @@ function KBScatterDraw(sData) {
 						d3.select(this).attr("r", 4);
 						d3.selectAll("tr#" + d.dataPointName).style("background", "");
 					});
-
+				*/
 			}
 	
 		}
