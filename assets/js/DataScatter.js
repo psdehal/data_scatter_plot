@@ -1,4 +1,19 @@
+/*
+Authors: 	Paramvir Dehal
+Contact: 	psdehal@lbl.gov
+			Physical Biosciences Division
+			Lawrence Berkeley National Lab
+			DOE KBase
 
+Summary:
+Functions for the creating a scatter plot from data sets and data points.
+
+TODO:
+-"Loading..." message
+-Settings tab 
+
+
+*/
 //These global variables should be in a single object structure
 
 var selectedSet = [];
@@ -175,7 +190,20 @@ function KBScatterDraw(sData) {
 			.attr("dy", ".71em")
 			.text(function(d) { return sData.dataSetObjs[d.x].dataSetName; });
 
+		// add mouseover for circles
+		// doing multiple selects is crazy slow
+
 		
+		$('svg circle').tipsy({
+			gravity: 's',
+			html: true,
+			title: function() {
+				var d = this.__data__;
+				return d.dataPointName + '<p>' + d.dataPointDesc;
+			}
+		});
+		
+
 		function plotCell (cellData) {
 			var cell = d3.select(this);
 
@@ -186,7 +214,11 @@ function KBScatterDraw(sData) {
 				.attr("width", cellSize - padding)
 				.attr("height", cellSize - padding);
 
-			
+			cell.call( brush.x(x_axis_scale[cellData.x]).y(y_axis_scale[cellData.y]) );		
+
+			// Have to put circles in last so that they 
+			// are in the front for the mouseover to work
+
 			cell.selectAll("circle")
 				.data(sData.dataPointObjs)
 				.enter()
@@ -195,8 +227,7 @@ function KBScatterDraw(sData) {
 				.attr("cx", function(d) { return x_axis_scale[cellData.x]( sData.values[d.dataPointName][cellData.x] ); })
 				.attr("cy", function(d) { return y_axis_scale[cellData.y]( sData.values[d.dataPointName][cellData.y] ); })
 				.attr("r", 4);
-
-			cell.call( brush.x(x_axis_scale[cellData.x]).y(y_axis_scale[cellData.y]) );
+			
 		}
 
 

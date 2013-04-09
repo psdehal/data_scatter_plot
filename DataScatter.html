@@ -7,13 +7,15 @@
     <script src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.js"></script>
     <script src="assets/js/DataScatter.js"></script>
     <script src="assets/js/bootstrap.js"></script>
+    <script src="assets/js/jquery.tipsy.js"></script>
     <link type="text/css" rel="stylesheet" href="assets/css/DataScatter.css" />
     <link rel="icon" href="img/KBase_favicon.ico" type="image/x-icon">
     <link href="assets/css/bootstrap.css" rel="stylesheet">
     <link href="assets/css/bootstrap-responsive.min.css" rel="stylesheet">
     <link href="assets/css/identity.css" rel="stylesheet">
     <link href="assets/css/kbase-common.css" rel="stylesheet">
-    <link type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css" rel="stylesheet" />    
+    <link type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css" rel="stylesheet" />   
+    <link href="assets/css/tipsy.css" rel="stylesheet" type="text/css" /> 
     <style type="text/css">
       body {
         /* padding to make room for the fixed nav bar, 
@@ -33,6 +35,7 @@
           <li class=""><a role="button" data-toggle="modal" href="#" onclick="d3.json('assets/data/mr1.FitnessData.json', KBScatterDraw)">Load Example Data</a></li>
         </ul>
         <ul class="nav" style="float:right;">
+          <li class=''><a role='button' data-toggle='modal' href='#settingsControl'>Settings</a></li>
           <li><a>Sign In<span id="counter"></span></a></li>
         </ul>
       </div>
@@ -73,6 +76,8 @@
 
     </div>
   
+  <!-- Begin Data Entry Modal  -->
+
     <div id="uploadModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="uploadLabel" aria-hidden="true">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -99,6 +104,21 @@
       <div class="modal-footer">
         <a href="#" class="close btn" data-dismiss="modal">Cancel</a>
         <a href="#" class="btn btn-primary" onclick="processDataFile()">Save Changes</a>
+      </div>
+    </div>
+
+<!-- Begin Settings Control modal -->
+
+    <div id='settingsControl' class='modal hide fade' tabindex='-1' role='dialog' aria-labelledby='settingsControlLabel' aria-hidden='true'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+        <h3 id='settingsControlLabel'>Settings</h3>
+      </div>
+      <div class='modal-body'>
+      </div>
+      <div class='modal-footer'>
+        <a href='#' class='close btn' data-dismiss='modal'>Cancel</a>
+        <a href='#' class='btn btn-primary' >Save</a>
       </div>
     </div>
 
