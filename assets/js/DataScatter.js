@@ -43,20 +43,6 @@ var sData = {
 //otherwise dataTables freaks out
 var dataPointsTable = 0;
 
-// tooltip inspired from
-// https://gist.github.com/1016860
-/*$("body")
-				.append("div")
-				.attr("id", "tooltip")
-				.style("position", "absolute")
-				.style("z-index", "10")
-				.style("visibility", "hidden")
-				.style("opacity", "0.8")
-				.style("background-color", "#222222")
-				.style("color", "#FFF")
-				.style("padding", "0.5em")
-				.text("");
-*/
 
 // utility function to move elements to the front
 d3.selection.prototype.moveToFront = function() { 
@@ -227,16 +213,6 @@ function KBScatterDraw(sData) {
 				.attr("cx", function(d) { return x_axis_scale[cellData.x]( sData.values[d.dataPointName][cellData.x] ); })
 				.attr("cy", function(d) { return y_axis_scale[cellData.y]( sData.values[d.dataPointName][cellData.y] ); })
 				.attr("r", 4)
-				//.attr("data-toggle", "tooltip")
-				//.attr("data-title", function (d) {return d.dataPointName + '<p>' + d.dataPointDesc; })
-				/*.each(function(d) {
-					$('circle#' + d.dataPointName).tipsy({
-						gravity: 's',
-						html: true,
-						title: function() {return d.dataPointName + '<p>' + d.dataPointDesc;}
-					});
-				})
-				*/
 				.on("mouseover", function(d) {
 					var id = $(this).attr("id");
 					$("circle#" + id).attr("r", 6); 
@@ -330,18 +306,6 @@ function KBScatterDraw(sData) {
 					dataPointsTable.fnSettings().aoData[ i ].nTr.id = uniquePoints[i];
 				}
 				setDataTablesHover();
-				/*
-				d3.selectAll(".selected")
-					.moveToFront()
-					.on("mouseover", function(d) {
-						d3.select(this).attr("r", 6);
-						d3.selectAll("tr#" + d.dataPointName).style("background", "orange");
-					})
-					.on("mouseout", function(d) {
-						d3.select(this).attr("r", 4);
-						d3.selectAll("tr#" + d.dataPointName).style("background", "");
-					});
-				*/
 			}
 	
 		}
