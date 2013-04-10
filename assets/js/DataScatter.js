@@ -43,8 +43,20 @@ var sData = {
 //otherwise dataTables freaks out
 var dataPointsTable = 0;
 
-
-
+// tooltip inspired from
+// https://gist.github.com/1016860
+/*$("body")
+				.append("div")
+				.attr("id", "tooltip")
+				.style("position", "absolute")
+				.style("z-index", "10")
+				.style("visibility", "hidden")
+				.style("opacity", "0.8")
+				.style("background-color", "#222222")
+				.style("color", "#FFF")
+				.style("padding", "0.5em")
+				.text("");
+*/
 
 // utility function to move elements to the front
 d3.selection.prototype.moveToFront = function() { 
@@ -52,6 +64,7 @@ d3.selection.prototype.moveToFront = function() {
 						this.parentNode.appendChild(this); 
 					}); 
 };
+
 
 
 function KBScatterDraw(sData) {
@@ -216,13 +229,14 @@ function KBScatterDraw(sData) {
 				.attr("r", 4)
 				//.attr("data-toggle", "tooltip")
 				//.attr("data-title", function (d) {return d.dataPointName + '<p>' + d.dataPointDesc; })
-				.each(function(d) {
+				/*.each(function(d) {
 					$('circle#' + d.dataPointName).tipsy({
 						gravity: 's',
 						html: true,
 						title: function() {return d.dataPointName + '<p>' + d.dataPointDesc;}
 					});
 				})
+				*/
 				.on("mouseover", function(d) {
 					var id = $(this).attr("id");
 					$("circle#" + id).attr("r", 6); 
@@ -231,6 +245,11 @@ function KBScatterDraw(sData) {
 
 					d3.selectAll("tr#" + id).style("background", "orange");
 					d3.selectAll("circle#" + id).moveToFront();
+					$('#tooltip').text(id + ": " + d.dataPointDesc);
+					return $('#tooltip').css("visibility", "visible"); 
+				})
+				.on("mousemove", function(){
+					return $('#tooltip').css("top", (d3.event.pageY+15) + "px").css("left", (d3.event.pageX-10)+"px");
 				})
 				.on("mouseout", function(d) {
 					var id = $(this).attr("id");
@@ -238,6 +257,7 @@ function KBScatterDraw(sData) {
 					$("circle#" + id).css("fill", "");
 					$("circle#" + id).css("fill-opacity", "");
 					d3.selectAll("tr#" + id).style("background", "");
+					return $('#tooltip').css("visibility", "hidden");
 				});
 			
 		}
