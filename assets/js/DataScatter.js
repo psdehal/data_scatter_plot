@@ -214,6 +214,8 @@ function KBScatterDraw(sData) {
 				.attr("cx", function(d) { return x_axis_scale[cellData.x]( sData.values[d.dataPointName][cellData.x] ); })
 				.attr("cy", function(d) { return y_axis_scale[cellData.y]( sData.values[d.dataPointName][cellData.y] ); })
 				.attr("r", 4)
+				//.attr("data-toggle", "tooltip")
+				//.attr("data-title", function (d) {return d.dataPointName + '<p>' + d.dataPointDesc; })
 				.each(function(d) {
 					$('circle#' + d.dataPointName).tipsy({
 						gravity: 's',
