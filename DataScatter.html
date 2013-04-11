@@ -14,7 +14,6 @@
     <link href="assets/css/identity.css" rel="stylesheet">
     <link href="assets/css/kbase-common.css" rel="stylesheet">
     <link type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css" rel="stylesheet" />   
-    <link href="assets/css/tipsy.css" rel="stylesheet" type="text/css" /> 
     <style type="text/css">
       body {
         /* padding to make room for the fixed nav bar, 
@@ -49,8 +48,18 @@
           </div>
         </div>
         <div class="span3">
-          <table id="key" class="accordian">
-          </table>
+          <ul class="nav nav-tabs" id="myTab">
+            <li class="active"><a href="#dataSets" data-toggle="tab">Data Sets</a></li>
+            <li><a href="#dataPointTags" data-toggle="tab">Tags</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="dataSets">
+              <table id="key" class="accordian">
+              </table>
+            </div>
+            <div class="tab-pane" id="dataPointTags">
+            </div>
+          </div>
         </div>
       </div>
 

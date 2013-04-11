@@ -1,19 +1,29 @@
 /*
-Authors: 	Paramvir Dehal
-Contact: 	psdehal@lbl.gov
-			Physical Biosciences Division
-			Lawrence Berkeley National Lab
-			DOE KBase
+ * KBase Data Scatter Plot Widget
+ * ------------------------------
+ * This is designed to be an insertable widget, but is being implemented 
+ * as a standalone page for now. 
+ * 
+ * This widget is designed to allow users to explore multiple data sets that
+ * share a common set of data points. These data points are plotted in multiple
+ * scatter plots, allowing the joint visualization of multiple dimensions 
+ * simultaneously. 
+ * 
+ * This widget is based off the d3 scatterplot example by Mike Bostock. 
+ * http://bl.ocks.org/mbostock/4063663
+ * 
+ * Paramvir Dehal
+ * psdehal@lbl.gov
+ * Physical Biosciences Division
+ * Lawrence Berkeley National Lab
+ * DOE KBase
+ *
+ * TODO:
+ * 		- "Loading..." message
+ *		- Settings tab 
+ */
 
-Summary:
-Functions for the creating a scatter plot from data sets and data points.
 
-TODO:
--"Loading..." message
--Settings tab 
-
-
-*/
 //These global variables should be in a single object structure
 
 var selectedSet = [];
@@ -31,8 +41,65 @@ var cellSize;
 var scatterplot;
 var selectedDataPoints = {};
 
-
-// Scatterplot Data object 
+/*
+ * Scatterplot Data object 
+ * -----------------------
+ * This is the central data object for this widget. It contains all the data
+ * that will be plotted: dataSets, dataPoints and values. 
+ *
+ * Simple Example of two dataSets with two dataPoints:
+ * 
+ * sData = {
+ *    "values": {
+ *        "nameId1": {
+ *            "0": 123,     // "dataSetId" : numeric value
+ *            "1": -0.05,
+ *            "dataPointName": "nameId1",         // names are unique
+ *            "dataPointDesc": "desc of nameId1"
+ *        },
+ *        "nameId2": {
+ *            "0": -3.3,
+ *            "1": 999.05,
+ *            "dataPointName": "nameId2",
+ *            "dataPointDesc": "desc of nameId2"
+ *        }
+ *    },
+ *    "dataSetObjs": [
+ *        {
+ *            "dataSetName": "name",      // do not have to be unique
+ *            "dataSetId": 0,
+ *            "dataSetType": "Fitness",
+ *            "minValue": -3.3,
+ *            "maxValue": 123
+ *        },
+ *        {
+ *            "dataSetName": "name",
+ *            "dataSetId": 1,
+ *            "dataSetType": "Expression",
+ *            "minValue": -0.05,
+ *            "maxValue": 999.05
+ *        }
+ *    ],
+ *    "dataPointObjs": [
+ *        {
+ *            "dataPointName": "nameId1",          // names are unique
+ *            "dataPointDesc": "desc of nameId1"
+ *        },
+ *        {
+ *            "dataPointName": "nameId2",
+ *            "dataPointDesc": "desc of nameId1"
+ *        }
+ *    ]
+ * } 
+ * ----------------------------------------------
+ * Still need to clean up the data object, has got a bit too much redundancy
+ * 
+ * "dataPointName" : must be unique, should probably auto-assign a unique
+ *                   id to it instead
+ * 
+ * "values" : contains dataSetIds, this should be an array instead
+ * 
+ */
 var sData = {
 		"values"        : {},
 		"dataSetObjs"   : [],
