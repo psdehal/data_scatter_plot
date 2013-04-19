@@ -14,9 +14,9 @@ rect.frame {
 	stroke: #aaa;
 }
 #key{
-	margin-top: 60px;
+	margin-top: 10px;
 	float: right;
-	height: 840px;
+	height: 890px;
 	overflow-y: scroll;
 	display: block;
 }
@@ -32,7 +32,7 @@ rect.frame {
 	width: 12px;
 	text-align: center;
 }
-.key_square{
+.key_square, .tag_square {
 	display: inline-block;
 	height: 10px;
 	width: 10px;
@@ -41,6 +41,9 @@ rect.frame {
 	margin-right: 10px;
 	margin-top: 5px;
 	margin-left: 10px;
+}
+.key_square:hover, .tag_square:hover {
+	outline: solid 2px #99CCFF;
 }
 .key_label {
 
@@ -61,21 +64,37 @@ rect.frame {
 circle {
 	fill: #99CCFF;
 	fill-opacity: .25;
+	stroke: none;
 }
+
 .selected {
-	fill: #800;
+	fill-opacity: .5;
+	stroke: #800;
+	stroke-width: 2;
 }
+.highlighted {
+	fill-opacity: .75;
+	stroke: orange;
+	stroke-width: 2;
+}
+
 .cell text {
 	pointer-events: none;
 }
-.loading_message {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%
-  z-index: 1001; 
-  background-color: gray;
-  opacity: 0.4;
-  display: none;
+table#colorSelect {
+	/*border: 3px solid black;*/
+	border-collapse: separate;
+	margin-left: auto;
+	margin-right: auto;
 }
+table#colorSelect td {
+	border: 3px solid white;
+	width : 20px;
+	height: 20px;
+	padding: 2px;
+}
+
+table#colorSelect td:hover {
+	border: 3px solid black;
+}
+

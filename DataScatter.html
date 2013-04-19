@@ -7,13 +7,15 @@
     <script src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.js"></script>
     <script src="assets/js/DataScatter.js"></script>
     <script src="assets/js/bootstrap.js"></script>
-    <link type="text/css" rel="stylesheet" href="assets/css/DataScatter.css" />
+    <script src="assets/js/bootstrapx-clickover.js"></script>
+    <script>$('rel["clickover"]').clickover();</script>
     <link rel="icon" href="img/KBase_favicon.ico" type="image/x-icon">
+    <link type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css" rel="stylesheet" />  
     <link href="assets/css/bootstrap.css" rel="stylesheet">
     <link href="assets/css/bootstrap-responsive.min.css" rel="stylesheet">
     <link href="assets/css/identity.css" rel="stylesheet">
     <link href="assets/css/kbase-common.css" rel="stylesheet">
-    <link type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css" rel="stylesheet" />   
+    <link type="text/css" rel="stylesheet" href="assets/css/DataScatter.css" />
     <style type="text/css">
       body {
         /* padding to make room for the fixed nav bar, 
@@ -58,11 +60,17 @@
               </table>
             </div>
             <div class="tab-pane" id="dataPointTags">
+              <form class='form-horizontal'>
+                <input class="span3" type="text" id="inputTag" placeholder="tag name" data-provide="typeahead" autocomplete="off" onchange="check_tag()">
+                <textarea class="span3" rows="3" id="inputTagDataPointNames" placeholder="data point names..."></textarea>
+                <button class="btn btn-primary btn-block" type="button" onclick="addTag()">Add</button>
+                <table id="tagTable">
+                </table>
             </div>
           </div>
         </div>
       </div>
-
+      <script>load_tags()</script>
       <div class="row">
         <div id="dataPointsTableContainer" class="span12">
           <table id="dataPointsTable">

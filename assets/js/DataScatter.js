@@ -106,6 +106,12 @@ var sData = {
 		"dataPointObjs" : []
 	};
 
+/*
+ * Tag data structure
+ */
+
+ var tags = {};
+
 //Declare dataTables handle for the dataPointsTable to make sure it is only created once
 //otherwise dataTables freaks out
 var dataPointsTable = 0;
@@ -118,7 +124,7 @@ d3.selection.prototype.moveToFront = function() {
 					}); 
 };
 
-
+var tmp;
 
 function KBScatterDraw(sData) {
 
@@ -282,12 +288,13 @@ function KBScatterDraw(sData) {
 				.attr("r", 4)
 				.on("mouseover", function(d) {
 					var id = $(this).attr("id");
-					$("circle#" + id).attr("r", 6); 
-					$("circle#" + id).css("fill", "orange");
-					$("circle#" + id).css("fill-opacity", .75);
+					
+					d3.selectAll("circle#" + id).classed("highlighted", 1)
+												.attr("r", 6)
+												.moveToFront();
 
 					d3.selectAll("tr#" + id).style("background", "orange");
-					d3.selectAll("circle#" + id).moveToFront();
+	
 					$('#tooltip').text(id + ": " + d.dataPointDesc);
 					return $('#tooltip').css("visibility", "visible"); 
 				})
@@ -296,10 +303,12 @@ function KBScatterDraw(sData) {
 				})
 				.on("mouseout", function(d) {
 					var id = $(this).attr("id");
-					$("circle#" + id).attr("r", 4); 
-					$("circle#" + id).css("fill", "");
-					$("circle#" + id).css("fill-opacity", "");
+
+					d3.selectAll("circle#" + id).classed("highlighted", 0)
+												.attr("r", 4);
+
 					d3.selectAll("tr#" + id).style("background", "");
+
 					return $('#tooltip').css("visibility", "hidden");
 				});
 			
@@ -352,10 +361,10 @@ function KBScatterDraw(sData) {
 			} 
 			else {			
 			
-				d3.selectAll(".selected").attr("class", function(d) {
+				d3.selectAll(".selected").classed("selected", function(d) {
 					points[d.dataPointName] = d.dataPointName;
-					return "selected";
-				});
+					return 1;
+				}).moveToFront();
 
 				for (var i in points) {
 					uniquePoints.push(points[i]);
@@ -393,17 +402,15 @@ function KBScatterDraw(sData) {
 				function() { 
 					$(this).css("background","orange");
 					var id = $(this).attr("id");
-					$("circle#" + id).attr("r", 6); 
-					$("circle#" + id).css("fill", "orange");
-					$("circle#" + id).css("fill-opacity", .75);
-					d3.selectAll("circle#" + id).moveToFront(); 
+					d3.selectAll("circle#" + id).classed("highlighted", 1)
+											 	.attr("r", 6)
+											 	.moveToFront(); 
 				},
 				function() { 
 					$(this).css("background", "");
 					var id = $(this).attr("id");
-					$("circle#" + id).attr("r", 4); 
-					$("circle#" + id).css("fill", "");
-					$("circle#" + id).css("fill-opacity", "");
+					d3.selectAll("circle#" + id).classed("highlighted", 0)
+											 	.attr("r", 4);
 				}
 			);
 	}
@@ -457,7 +464,7 @@ function processDataFile() {
 	var descCol = $("#descriptionColumn").val() - 1;
 	var dataCol = $("#datasetStartColumn").val() - 1;
 
-	console.log(JSON.stringify(sData));
+	//console.log(JSON.stringify(sData));
 	reader.onload = function (event) {
 		var fileString = event.target.result;
 		var lines      = fileString.split(/(\r\n|\n|\r)/g);
@@ -519,6 +526,160 @@ function processDataFile() {
 	}
 
 	$('#uploadModal').modal('hide');
+}
+
+/*
+ * check_tag()
+ * ----------
+ * check the input tag to see if it already exists, if so
+ * enter the dataPointNames associated with the tag into the
+ * #inputTagDataPointNames textbox
+ *
+ */
+
+function check_tag() {
+	var tagName = $('#inputTag').val();
+
+	for (var i in tags) {
+		if (i === tagName) {
+			$('#inputTagDataPointNames').val( tags[i]['dataPointNames'].join("\n") );
+		}
+	}
+}
+
+/*
+ * addTag()
+ * --------
+ * processes form input for adding a tag and updates the tag list table
+ *
+ */
+
+function addTag() {
+	var tagName = $('#inputTag').val();
+	var inputDataPointNames = $('#inputTagDataPointNames').val();
+
+
+	
+	var tagExists = false;
+
+	for (var i in tags) {
+		if(i === tagName) {
+			tagExists = true;
+		}
+	}
+	if (tagExists) {
+		return;
+	}
+
+	var taggedDataPointNames = inputDataPointNames.split(/[, ]|\r\n|\n|\r/g);
+	
+	tags[tagName] = { "status" : 0,
+					  "dataPointNames" : []
+					};
+	
+
+	for (var i = 0; i < taggedDataPointNames.length; i++) {
+		tags[ tagName ]["dataPointNames"].push(taggedDataPointNames[i]);
+	}
+
+
+
+
+	var tagTable = $('#tagTable')
+					.append("<tr class='tag_exp' id='" + tagName + "'>" + 
+					    "<td class='key_count' id='key_count_'" + tagName + "'></td>" +
+					    "<td id='colorSelect_" + tagName + "' class='tag_square'></td>" +
+					    "<td class='key_label' id='key_label_" + tagName + "'>" + tagName + "</td>" +
+						"</tr>");
+	//aec7e8
+	var colorTable = "<table id='colorSelect'>" +
+			  		 "<tr>" +
+						"<td style='background-color:#1f77b4'></td>" +
+						"<td style='background-color:#99ccff'></td>" +
+						"<td style='background-color:#ff7f0e'></td>" +
+						"<td style='background-color:#ffbb78'></td>" +
+					 "</tr><tr>" +
+						"<td style='background-color:#2ca02c'></td>" +
+						"<td style='background-color:#98df8a'></td>" +
+						"<td style='background-color:#d62728'></td>" +
+						"<td style='background-color:#ff9896'></td>" +
+					 "</tr><tr>" +
+						"<td style='background-color:#9467bd'></td>" +
+						"<td style='background-color:#c5b0d5'></td>" +
+						"<td style='background-color:#8c564b'></td>" +
+					 	"<td style='background-color:#c49c94'></td>" +
+					 "</tr><tr>" +
+						"<td style='background-color:#e377c2'></td>" +
+						"<td style='background-color:#f7b6d2'></td>" +
+						"<td style='background-color:#7f7f7f'></td>" +
+						"<td style='background-color:#c7c7c7'></td>" +
+					 "</tr><tr>" +
+					"</table>";
+
+
+	tmp = $('<div>' + colorTable + '</div>');
+			tmp.find('td')
+			.attr('onclick', "toggle_tag($(this), '" + tagName +"')");
+
+
+	$('#colorSelect_'+ tagName).clickover( {
+										html : true,
+										placement: "bottom",
+										title: 'tag color<button type="button" class="close" data-dismiss="clickover">&times;</button>',
+										trigger: 'manual',
+										width : '160px',
+										content : tmp.html()
+									});
+
+}
+
+function toggle_tag(caller,id) {
+
+	var tagColor = $(caller).css("background-color");
+
+	$('#tag_' + id).remove();
+	$("<style type='text/css' id='tag_" + id + "'>.tag_" + id + "{ fill: " + tagColor + "; fill-opacity: .7; }</style>").appendTo("head");
+
+	$('#colorSelect_' + id).css("background-color", tagColor);
+
+	for (var i = 0; i < tags[id]["dataPointNames"].length; i++) {
+		console.log("d " + tags[id]["dataPointNames"][i]);
+		d3.selectAll("circle#" + tags[id]["dataPointNames"][i] ).classed("tag_" + id, 1)
+																.moveToFront();
+	}
+	console.log("status " + id + ": " + tags[id]["status"]);
+	
+	if(tags[id]["status"] === 1) {
+		tags[id]["status"] = 0;
+	} else {
+		tags[id]["status"] = 1;
+	}
+}
+
+function load_tags() {
+	var tmpTags = {
+		"General_Secretion" : "SO_0165\nSO_0166\nSO_0167\nSO_0168\nSO_0169\nSO_0170\nSO_0172\nSO_0173\nSO_0175\nSO_0176",
+		"Megaplasmid" : "SO_A0002",
+		"Fumarate" : "SO_0970",
+		"inPubMed" : "",
+		"inFBA" : "",
+		"coreProteobacteria" : "",
+		"coreShewanella" : "",
+		"inRegulome" : "",
+		"HGT" : "SO_0002"
+	};
+
+	var source = [];
+	for (var i in tmpTags) {
+		$('#inputTag').val(i);
+		$('#inputTagDataPointNames').val(tmpTags[i]);
+		addTag();
+		source.push(i);
+	}
+
+	$('#inputTag').typeahead({
+						source: source
+	});
 }
 
 $(window).load(function(){
