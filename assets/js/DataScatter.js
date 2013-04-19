@@ -111,6 +111,7 @@ var sData = {
  */
 
  var tags = {};
+ var activeTags = [];
 
 //Declare dataTables handle for the dataPointsTable to make sure it is only created once
 //otherwise dataTables freaks out
@@ -533,17 +534,26 @@ function processDataFile() {
  * ----------
  * check the input tag to see if it already exists, if so
  * enter the dataPointNames associated with the tag into the
- * #inputTagDataPointNames textbox
+ * #inputTagDataPointNames textbox and change the value of
+ * #addTagButton to "Replace"
  *
  */
 
 function check_tag() {
 	var tagName = $('#inputTag').val();
+	var tagExists = false;
 
 	for (var i in tags) {
 		if (i === tagName) {
-			$('#inputTagDataPointNames').val( tags[i]['dataPointNames'].join("\n") );
+			tagExists = true;
 		}
+	}
+
+	if (tagExists) {
+		$('#inputTagDataPointNames').val( tags[i]['dataPointNames'].join("\n") );
+		$('#addTagButton').html("Replace");
+	} else {
+		$('#addTagButton').html("Add");
 	}
 }
 
@@ -567,9 +577,6 @@ function addTag() {
 			tagExists = true;
 		}
 	}
-	if (tagExists) {
-		return;
-	}
 
 	var taggedDataPointNames = inputDataPointNames.split(/[, ]|\r\n|\n|\r/g);
 	
@@ -582,14 +589,20 @@ function addTag() {
 		tags[ tagName ]["dataPointNames"].push(taggedDataPointNames[i]);
 	}
 
-
+	/*
+	 * if tag exists, return without redrawing the table entry
+	 */
+	if (tagExists) {
+		return;
+	}
 
 
 	var tagTable = $('#tagTable')
 					.append("<tr class='tag_exp' id='" + tagName + "'>" + 
-					    "<td class='key_count' id='key_count_'" + tagName + "'></td>" +
+					    "<td class='tag_order' id='tag_order_" + tagName + "'></td>" +
 					    "<td id='colorSelect_" + tagName + "' class='tag_square'></td>" +
-					    "<td class='key_label' id='key_label_" + tagName + "'>" + tagName + "</td>" +
+					    "<td class='key_label' id='key_label_" + tagName + "'>" + tagName + 
+					    "</td>" +
 						"</tr>");
 	//aec7e8
 	var colorTable = "<table id='colorSelect'>" +
@@ -614,13 +627,18 @@ function addTag() {
 						"<td style='background-color:#7f7f7f'></td>" +
 						"<td style='background-color:#c7c7c7'></td>" +
 					 "</tr><tr>" +
+					 	"<td id='colorNone' colspan=4><button class='btn btn-mini btn-block' type='button'>None</button></td>" +
+					 "</tr>"
 					"</table>";
 
 
 	tmp = $('<div>' + colorTable + '</div>');
-			tmp.find('td')
-			.attr('onclick', "toggle_tag($(this), '" + tagName +"')");
-
+	
+	tmp.find('td')
+		.attr('onclick', "set_tag_color($(this).css('background-color'), '" + tagName +"')");
+	
+	tmp.find("#colorNone")
+		.attr('onclick', 'unset_tag_color("' + tagName + '")');
 
 	$('#colorSelect_'+ tagName).clickover( {
 										html : true,
@@ -633,9 +651,20 @@ function addTag() {
 
 }
 
-function toggle_tag(caller,id) {
+/*
+ * set_tag_color(tagColor, id)
+ * ----------------------
+ * takes input color 
+ * and applies it to the dataPoints with the "tag" (id)
+ *
+ * tagColor : color you want all the dataPoints with "tag" to be colored
+ * id : id of the tag
+ * 
+ * 
+ * returns nothing
+ */
 
-	var tagColor = $(caller).css("background-color");
+function set_tag_color(tagColor,id) {
 
 	$('#tag_' + id).remove();
 	$("<style type='text/css' id='tag_" + id + "'>.tag_" + id + "{ fill: " + tagColor + "; fill-opacity: .7; }</style>").appendTo("head");
@@ -647,14 +676,62 @@ function toggle_tag(caller,id) {
 		d3.selectAll("circle#" + tags[id]["dataPointNames"][i] ).classed("tag_" + id, 1)
 																.moveToFront();
 	}
-	console.log("status " + id + ": " + tags[id]["status"]);
 	
+	for (var i = 0; i < activeTags.length; i++) {
+		if (activeTags[i]["id"] === id) {
+			activeTags.splice(i,1);
+		}
+	}
+	activeTags.push( {"id": id, "color": tagColor} );
+	$('#tag_order_' + id).html( activeTags.length );
+
+	update_tag_order();
+
 	if(tags[id]["status"] === 1) {
 		tags[id]["status"] = 0;
 	} else {
 		tags[id]["status"] = 1;
 	}
 }
+
+/*
+ * unset_tag_color(id)
+ * -------------------
+ * takes input tag and unapplies the tag color to all dataPoints with that tag
+ * note: coloring by other tags will still apply
+ */
+
+ function unset_tag_color (id) {
+ 	$('#tag_' + id).remove(); //removes existing css styling from dom
+
+ 	$('#colorSelect_' + id).css("background-color", "");
+
+ 	for (var i = 0; i < tags[id]["dataPointNames"].length; i++) {
+ 		d3.selectAll("circle#" + tags[id]["dataPointNames"][i]).classed("tag_" + id, 0);
+ 	}
+ 	for (var i = 0; i < activeTags.length; i++) {
+ 		if (activeTags[i]["id"] === id) {
+ 			activeTags.splice(i,1);
+ 		}
+ 	}
+ 	console.log("asd: " + id);
+ 	$('#tag_order_' + id).html('');
+ 	update_tag_order();
+ }
+
+ /*
+  * update_tag_order()
+  * ------------------
+  * updates the html doc to show the tag selection order
+  *
+  * returns nothing
+  */
+
+ function update_tag_order() {
+ 	for (var i = 0; i < activeTags.length; i++) {
+ 		$('#tag_order_' + activeTags[i]["id"]).html( i + 1 );
+ 	}
+ }
 
 function load_tags() {
 	var tmpTags = {

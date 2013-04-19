@@ -26,7 +26,7 @@ rect.frame {
 	display: inline-block;
 	
 }
-.key_count {
+.key_count, .tag_order {
 	float: left;
 	display: inline-block;
 	width: 12px;
@@ -96,5 +96,8 @@ table#colorSelect td {
 
 table#colorSelect td:hover {
 	border: 3px solid black;
+}
+table#colorSelect td#colorNone:hover{
+	border: 3px solid white;
 }
 
