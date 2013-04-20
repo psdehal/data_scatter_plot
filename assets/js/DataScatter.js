@@ -566,8 +566,11 @@ function check_tag() {
 
 function addTag() {
 	var tagName = $('#inputTag').val();
-	var inputDataPointNames = $('#inputTagDataPointNames').val();
-	
+	var taggedDataPointNames = $('#inputTagDataPointNames').val().split(/[, ]|\r\n|\n|\r/g);
+
+	//Need to add really user data entry checking
+	if ($('#inputTagDataPointNames').val() === "" || taggedDataPointNames.length === 0) {return;}
+
 	var tagExists = false;
 	var tagActive = false;
 	var color     = "";
@@ -585,7 +588,7 @@ function addTag() {
 		}
 	}
 
-	var taggedDataPointNames = inputDataPointNames.split(/[, ]|\r\n|\n|\r/g);
+	
 	
 	tags[tagName] = { "status" : 0,
 					  "dataPointNames" : []
