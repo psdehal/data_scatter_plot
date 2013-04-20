@@ -452,7 +452,7 @@ function KBScatterDraw(sData) {
 		}
 
 		makePlot(sData);
-		// need to remove loading message 
+		color_by_active_tags();
 	}
 }
 
@@ -567,14 +567,21 @@ function check_tag() {
 function addTag() {
 	var tagName = $('#inputTag').val();
 	var inputDataPointNames = $('#inputTagDataPointNames').val();
-
-
 	
 	var tagExists = false;
+	var tagActive = false;
+	var color     = "";
 
 	for (var i in tags) {
 		if(i === tagName) {
 			tagExists = true;
+			for (var j = 0; j <activeTags.length; j++) {
+				if(activeTags[j]["id"] === tagName){
+					tagActive = true;
+					color = activeTags[j]["color"];
+					unset_tag_color(tagName);
+				}
+			}
 		}
 	}
 
@@ -590,9 +597,14 @@ function addTag() {
 	}
 
 	/*
-	 * if tag exists, return without redrawing the table entry
+	 * if tag exists, 
+	 * call color_by_active tags if replaced tag is active
+	 * return without redrawing the table entry
 	 */
 	if (tagExists) {
+		if (tagActive) {
+			set_tag_color(color,tagName);
+		}
 		return;
 	}
 
@@ -672,9 +684,9 @@ function set_tag_color(tagColor,id) {
 	$('#colorSelect_' + id).css("background-color", tagColor);
 
 	for (var i = 0; i < tags[id]["dataPointNames"].length; i++) {
-		console.log("d " + tags[id]["dataPointNames"][i]);
-		d3.selectAll("circle#" + tags[id]["dataPointNames"][i] ).classed("tag_" + id, 1)
-																.moveToFront();
+		d3.selectAll("circle#" + tags[id]["dataPointNames"][i] )
+			.classed("tag_" + id, 1)
+			.moveToFront();
 	}
 	
 	for (var i = 0; i < activeTags.length; i++) {
@@ -687,11 +699,6 @@ function set_tag_color(tagColor,id) {
 
 	update_tag_order();
 
-	if(tags[id]["status"] === 1) {
-		tags[id]["status"] = 0;
-	} else {
-		tags[id]["status"] = 1;
-	}
 }
 
 /*
@@ -707,14 +714,15 @@ function set_tag_color(tagColor,id) {
  	$('#colorSelect_' + id).css("background-color", "");
 
  	for (var i = 0; i < tags[id]["dataPointNames"].length; i++) {
- 		d3.selectAll("circle#" + tags[id]["dataPointNames"][i]).classed("tag_" + id, 0);
+ 		d3.selectAll("circle#" + tags[id]["dataPointNames"][i])
+ 			.classed("tag_" + id, 0);
  	}
  	for (var i = 0; i < activeTags.length; i++) {
  		if (activeTags[i]["id"] === id) {
  			activeTags.splice(i,1);
  		}
  	}
- 	console.log("asd: " + id);
+
  	$('#tag_order_' + id).html('');
  	update_tag_order();
  }
@@ -733,13 +741,42 @@ function set_tag_color(tagColor,id) {
  	}
  }
 
+/*
+ * color_by_active_tags() 
+ * ----------------------
+ * re-colors all dataPoints using the active tags in activeTags object
+ *
+ * returns nothing
+ */
+
+function color_by_active_tags() {
+	for (var i = 0; i < activeTags.length; i++ ) {
+		
+		var id    = activeTags[i]["id"];
+		var color = activeTags[i]["color"];
+
+		$('#tag_' + id).remove();
+		$("<style type='text/css' id='tag_" + id + "'>.tag_" + 
+			id + "{ fill: " + 
+			color + "; fill-opacity: .7; }</style>")
+		.appendTo("head");
+
+		for (var t = 0; t < tags[id]["dataPointNames"].length; t++) {
+			d3.selectAll("circle#" + tags[id]["dataPointNames"][t])
+				.classed("tag_" + id, 1)
+				.moveToFront();
+		}
+		console.log("hey");
+	}
+}
+
 function load_tags() {
 	var tmpTags = {
 		"General_Secretion" : "SO_0165\nSO_0166\nSO_0167\nSO_0168\nSO_0169\nSO_0170\nSO_0172\nSO_0173\nSO_0175\nSO_0176",
 		"Megaplasmid" : "SO_A0002",
 		"Fumarate" : "SO_0970",
-		"inPubMed" : "",
-		"inFBA" : "",
+		"inPubMed" : "SO_0165\nSO_0166\nSO_0167\nSO_0168",
+		"inFBA" : "SO_0165\nSO_0166",
 		"coreProteobacteria" : "",
 		"coreShewanella" : "",
 		"inRegulome" : "",
