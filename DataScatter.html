@@ -32,7 +32,7 @@
         <a class="brand" href="index.html">Data Scatter</a>
         <ul class="nav">
           <li class=""><a role="button" data-toggle="modal" href="#uploadModal">Upload Data</a></li>
-          <li class=""><a role="button" data-toggle="modal" href="#" onclick="d3.json('assets/data/mr1.FitnessData.json', KBScatterDraw)">Load Example Data</a></li>
+          <li class=""><a role="button" data-toggle="modal" href="#" onclick="d3.json('assets/data/mr1.FitnessData.json', load_test_data)">Load Example Data</a></li>
         </ul>
         <ul class="nav" style="float:right;">
           <li class=''><a role='button' data-toggle='modal' href='#settingsControl'>Settings</a></li>
@@ -70,7 +70,7 @@
           </div>
         </div>
       </div>
-      <script>load_tags()</script>
+
       <div class="row">
         <div id="dataPointsTableContainer" class="span12">
           <table id="dataPointsTable">
@@ -113,7 +113,7 @@
             <td>Description Column#</td><td><input required="1" id="descriptionColumn" type="text" placeholder="2" /></td>
           </tr>
           <tr>
-            <td>Dataset Start Column#</td><td><input required="1" id="datasetStartColumn" type="text" placeholder="3" \></td>
+            <td>Dataset Start Column#</td><td><input required="1" id="datasetStartColumn" type="text" placeholder="3" /></td>
           </tr>
         </table>
       </div>
@@ -141,6 +141,8 @@
 <!-- Begin tooltip div -->
     <div id='tooltip' style="position: absolute; z-index: 10; visibility: hidden; opacity: 0.8; background-color: rgb(34, 34, 34); color: rgb(255, 255, 255); padding: 0.5em;">
     </div>
+    <div id='loading' style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; visibility: hidden; opacity: 0.8; background: rgb(34,34,34) url(assets/img/kbase_animated_logo.gif) no-repeat center center;"></div>
+
 
   </body>
 
