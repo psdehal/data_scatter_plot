@@ -21,6 +21,7 @@
  * TODO:
  * 		- "Loading..." message
  *		- Settings tab 
+ *      - Marcin's Wordcloud code
  */
 
 
