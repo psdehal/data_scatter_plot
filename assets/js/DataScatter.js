@@ -22,6 +22,10 @@
  * 		- "Loading..." message
  *		- Settings tab 
  *      - Marcin's Wordcloud code
+ *      - Cross browser, cross platform fixes
+ *      - edit tag lists, click and stay highlighted, add to tags
+ *      - Settings: on selecting two experiments, only show x vs y
+ *      - More user defined fields in upload tabfile "systematic name", etc
  */
 
 
