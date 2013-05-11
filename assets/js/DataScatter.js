@@ -33,6 +33,7 @@
 
 var selectedSet = [];
 var maxSelection= 10;
+var hideDiagonal= 1; // toggles between showing a full square and just the upper diagonal
 
 var container_dimensions = { width: 900, height: 900},
 	margins = {top: 60, right: 60, bottom: 60, left: 60},
@@ -41,7 +42,8 @@ var container_dimensions = { width: 900, height: 900},
 		height: container_dimensions.height- margins.top  - margins.bottom
 	};
 
-var padding = 20;
+var padding = 25; // area between cells
+var cellAreaMargin = 16; // adds a bit to the min/max range of cell data so that data points aren't on the boarders
 var cellSize;
 var scatterplot;
 var selectedDataPoints = {};
@@ -137,6 +139,7 @@ function load_test_data(json) {
 	sData = json;
 	KBScatterDraw(sData);
 	load_tags();
+	$("#loading").addClass("hidden");
 }
 
 function KBScatterDraw(sData) {
@@ -159,7 +162,12 @@ function KBScatterDraw(sData) {
 		.enter()
 		.append("tr")
 			.attr("class", "key_exp")
-			.attr("id", function(d){return d.dataSetId});
+			.attr("id", function(d){return d.dataSetId})
+			.on("click", function(d) {$('#loading').removeClass('hidden'); 
+								 	  console.log("hey");
+								 	  set_selected_dataSet(d.dataSetId);
+									  $('#loading').addClass('hidden'); 
+									 });
 
 	key_items.append("td")
 		.attr("id",    function(d){return "key_count_" + d.dataSetId})
@@ -174,8 +182,6 @@ function KBScatterDraw(sData) {
 		.attr("class", "key_label")
 		.text(function(d){return d.dataSetName});
 
-	d3.selectAll(".key_exp")
-		.on("click", set_selected_dataSet );
 
 
 	// Making the dataPointsTable
@@ -209,7 +215,18 @@ function KBScatterDraw(sData) {
 	function makePlot(sData) {
 
 		d3.select("svg").remove();
-		cellSize = chart_dimensions.width / selectedSet.length;
+		
+		if (hideDiagonal) {
+			numCells = selectedSet.length - 1;
+			xCells   = selectedSet.slice(0,-1);
+			yCells   = selectedSet.slice(1);
+		} else {
+			numCells = selectedSet.length;
+			xCells   = selectedSet;
+			yCells   = selectedSet;
+		}
+
+		cellSize = chart_dimensions.width / numCells;
 		scatterplot = d3.select("#plotarea")
 						.append("svg")
 							.attr("width",  container_dimensions.width )
@@ -222,33 +239,37 @@ function KBScatterDraw(sData) {
 			y_axis_scale = {};
 
 		selectedSet.forEach( function(dataSet) {
+			//going to add a bit of padding to the min and max value
+			var min = sData.dataSetObjs[dataSet].minValue - ( ( (cellSize + cellAreaMargin)/cellSize - 1) * (sData.dataSetObjs[dataSet].maxValue - sData.dataSetObjs[dataSet].minValue) ) / 2;
+			var max = parseFloat(sData.dataSetObjs[dataSet].maxValue) + parseFloat(( ( (cellSize + cellAreaMargin)/cellSize - 1) * (sData.dataSetObjs[dataSet].maxValue - sData.dataSetObjs[dataSet].minValue) ) / 2);
+			
 			x_axis_scale[dataSet] = d3.scale.linear()
-									.domain( [sData.dataSetObjs[dataSet].minValue, sData.dataSetObjs[dataSet].maxValue] )
+									.domain( [min, max] )
 									.range( [padding / 2, cellSize - padding / 2] );
 
 			y_axis_scale[dataSet] = d3.scale.linear()
-									.domain( [sData.dataSetObjs[dataSet].minValue, sData.dataSetObjs[dataSet].maxValue] )
+									.domain( [min, max] )
 									.range( [cellSize - padding / 2, padding / 2] );
 		});
 
 
 		var axis = d3.svg.axis();
-						//.ticks(5);
+						//.ticks(5)
 						//.tickSize( chart_dimensions.width );
 
 
 		scatterplot.selectAll("g.x.axis")
-				.data(selectedSet)
+				.data(xCells)
 				.enter().append("g")
 				.attr("class", "x axis")
-				.attr("transform", function(d, i) { return "translate(" + i*cellSize + "," + chart_dimensions.width +")";} )
-				.each(function(d) {d3.select(this).call(axis.scale(x_axis_scale[d]).orient("bottom")); });
+				.attr("transform", function(d, i) { return "translate(" + i*cellSize + "," + "0" +")";} )
+				.each(function(d) {d3.select(this).call(axis.scale(x_axis_scale[d]).orient("top")); });
 
 		scatterplot.selectAll("g.y.axis")
-				.data(selectedSet)
+				.data(yCells)
 				.enter().append("g")
 				.attr("class", "y axis")
-				.attr("transform", function(d, i) { return "translate(0," + (selectedSet.length - 1 -i)*cellSize + ")"; } )
+				.attr("transform", function(d, i) { return "translate(0," + (yCells.length - 1 -i)*cellSize + ")"; } )
 				.each(function(d) {d3.select(this).call(axis.scale(y_axis_scale[d]).orient("left")); });
 
 		var brush= d3.svg.brush()
@@ -267,22 +288,35 @@ function KBScatterDraw(sData) {
 					.each(plotCell);
 
 		// Titles for the diagonal.
-		cell.filter(function(d) { return d.i == d.j; })
+		/*cell.filter(function(d) { return d.i == d.j-1; })
 			.append("text")
-			.attr("x", padding)
-			.attr("y", padding)
+			.attr("x", cellSize/2)
+			.attr("y", cellSize)
 			.attr("dy", ".71em")
+			.attr("text-anchor", "middle")
 			.text(function(d) { return sData.dataSetObjs[d.x].dataSetName; });
 
-		/*
-		cell.append("text")
-			.attr("x", padding)
-			.attr("y", padding)
+		cell.filter(function(d) { return d.i == d.j-1; })
+			.append("text")
+			//.attr("x", cellSize)
+			//.attr("y", cellSize/2)
+			.attr("text-anchor", "middle")
 			.attr("dy", ".71em")
-			.attr("transform", "rotate(-90 10 10)")
-			.attr("style", "dominant-baseline: middle; text-anchor: middle;")
-			.text(function(d) {return sData.dataSetObjs[d.x].dataSetName; });
+			.attr("transform", "translate(" + cellSize + "," + cellSize/2 + ") rotate(-90)")
+			.text(function(d) { return sData.dataSetObjs[d.y].dataSetName; });
 		*/
+		
+		cell.append("text")
+			.attr("x", cellSize/2)
+			.attr("y", cellSize)
+			.attr("text-anchor", "middle")
+			.text(function(d) {return sData.dataSetObjs[d.x].dataSetName; });
+		
+		cell.append("text")
+			.attr("text-anchor", "middle")
+			.attr("transform", "translate(" + cellSize + "," + cellSize/2 + ") rotate(-90)")
+			.text(function(d) { return sData.dataSetObjs[d.y].dataSetName; });
+
 		function plotCell (cellData) {
 			var cell = d3.select(this);
 
@@ -413,11 +447,19 @@ function KBScatterDraw(sData) {
 
 	function cross(arrayA, arrayB) {
 		var matrixC = [], sizeA = arrayA.length, sizeB = arrayB.length, i, j;
-		for (i = -1; ++i < sizeA;) {
-			for (j = -1; ++j < sizeB; ) {
-				matrixC.push( {x: arrayA[i], i: i, y: arrayB[j], j: j} );
+		if (hideDiagonal){
+			for (i = 0; i < sizeA; i++) {
+				for (j = i+1; j < sizeB; j++) {
+					matrixC.push( {x: arrayA[i], i: i, y: arrayB[j], j: j} );
+				}
 			}
-		}
+		} else {
+			for (i = -1; ++i < sizeA;) {
+				for (j = -1; ++j < sizeB; ) {
+					matrixC.push( {x: arrayA[i], i: i, y: arrayB[j], j: j} );
+				}
+			}
+		}	
 		return matrixC;
 	}
 
@@ -439,16 +481,17 @@ function KBScatterDraw(sData) {
 			);
 	}
 
-	function set_selected_dataSet() {
+
+	function set_selected_dataSet(id) {
 		// Need to add "loading..." message here
-		document.getElementById('loading').style.visibility = 'visible';
-		var id = d3.select(this).attr("id");
-		var i;
+		//var id = d3.select(this).attr("id");
+		
+		// flag for dataSets to act as a toggle to remove ids that were already selected
 		var markForRemoval;
 
 
 		// if selection already selected, mark index pos for removal
-		for (i = 0; i < selectedSet.length; i += 1) {
+		for (var i = 0; i < selectedSet.length; i += 1) {
 			if (id == selectedSet[i]) {
 				markForRemoval = i;
 			} 
@@ -477,7 +520,7 @@ function KBScatterDraw(sData) {
 
 		makePlot(sData);
 		color_by_active_tags();
-		document.getElementById('loading').style.visibility = 'hidden';
+		//document.getElementById('loading').style.visibility = 'hidden';
 	}
 }
 
@@ -660,7 +703,7 @@ function addTag() {
 					    "<td class='key_label' id='key_label_" + tagName + "'>" + tagName + 
 					    "</td>" +
 						"</tr>");
-	//aec7e8
+	//
 	var colorTable = "<table id='colorSelect'>" +
 			  		 "<tr>" +
 						"<td style='background-color:#1f77b4'></td>" +
