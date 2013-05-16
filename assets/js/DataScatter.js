@@ -19,12 +19,10 @@
  * DOE KBase
  *
  * TODO:
- * 		- "Loading..." message
  *		- Settings tab 
  *      - Marcin's Wordcloud code
  *      - Cross browser, cross platform fixes
  *      - edit tag lists, click and stay highlighted, add to tags
- *      - Settings: on selecting two experiments, only show x vs y
  *      - More user defined fields in upload tabfile "systematic name", etc
  */
 
@@ -164,9 +162,10 @@ function KBScatterDraw(sData) {
 			.attr("class", "key_exp")
 			.attr("id", function(d){return d.dataSetId})
 			.on("click", function(d) {$('#loading').removeClass('hidden'); 
-								 	  console.log("hey");
-								 	  set_selected_dataSet(d.dataSetId);
-									  $('#loading').addClass('hidden'); 
+								 	  setTimeout(function () {
+								 	  				set_selected_dataSet(d.dataSetId);
+								 	  				$('#loading').addClass('hidden');
+								 	  			 }, 10);
 									 });
 
 	key_items.append("td")
@@ -483,8 +482,6 @@ function KBScatterDraw(sData) {
 
 
 	function set_selected_dataSet(id) {
-		// Need to add "loading..." message here
-		//var id = d3.select(this).attr("id");
 		
 		// flag for dataSets to act as a toggle to remove ids that were already selected
 		var markForRemoval;
@@ -518,9 +515,9 @@ function KBScatterDraw(sData) {
 			d3.select("#key_count_"  + selectedSet[i]).text(i+1);
 		}
 
-		makePlot(sData);
+		setTimeout(makePlot(sData),1);
 		color_by_active_tags();
-		//document.getElementById('loading').style.visibility = 'hidden';
+		
 	}
 }
 
@@ -886,34 +883,3 @@ function load_tags() {
 	});
 }
 
-$(window).load(function(){
-    //clear the default CSS associated with the blockUI loading element so we can insert ours
-    $.blockUI.defaults.css = {};
-    $(document).ajaxStop($.unblockUI);
-});
-
-function showLoadingMessage(message, element) {
-    if (element === undefined || element === null) {
-		if (message && message.length > 0) {
-			$("#loading_message_text").empty();
-			$("#loading_message_text").append(message);
-		}
-		
-		$.blockUI({message: $("#loading_message")});    
-    }
-    else {
-        $(element).block({message: "<div><div>" + message + "</div><div><img src='assets/img/loading.gif'/></div></div>"});    
-    }
-}
-
-
-function hideLoadingMessage(element) {
-    if (element === undefined || element === null) {
-        $.unblockUI();
-		$("#loading_message_text").empty();
-		$("#loading_message_text").append("Loading, please wait...");
-    }
-    else {
-        $(element).unblock();
-    }        
-}
